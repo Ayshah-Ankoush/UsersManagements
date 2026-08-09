@@ -1,11 +1,17 @@
 package com.codeWithAyshah.usersmanagment.service;
 
+import com.codeWithAyshah.usersmanagment.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
-    public void LogIn(String name ,int phoneNumber ,String address){
-        System.out.println("loging ......");
+    UserRepository  userRepository;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public long countUsers() {
+        return userRepository.count();
     }
 }
