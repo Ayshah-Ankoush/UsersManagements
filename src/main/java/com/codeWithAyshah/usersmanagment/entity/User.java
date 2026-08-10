@@ -1,19 +1,17 @@
 package com.codeWithAyshah.usersmanagment.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import static java.util.Arrays.stream;
 
 @Data
 @Entity
-@Table(name = "user")
+@Table(name = "\"user\"")
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
     @Column (name = "fullname")
     private String fullName ;
@@ -32,9 +30,5 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.address = address;
     }
-
-
-
-
 
 }
