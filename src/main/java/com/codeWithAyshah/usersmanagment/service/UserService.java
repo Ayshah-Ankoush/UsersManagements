@@ -1,5 +1,6 @@
 package com.codeWithAyshah.usersmanagment.service;
 
+import com.codeWithAyshah.usersmanagment.exception.UserNotFoundException;
 import com.codeWithAyshah.usersmanagment.Mapper.ReqMapper;
 import com.codeWithAyshah.usersmanagment.Mapper.ResMapper;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
@@ -14,13 +15,13 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-   // User users = Arrays.asList();
+    // User users = Arrays.asList();
 
-    private UserRepository  userRepository;
+    private UserRepository userRepository;
     private ReqMapper reqMapper;
     private ResMapper resMapper;
 
-    public UserService(UserRepository userRepository , ReqMapper reqMapper, ResMapper resMapper) {
+    public UserService(UserRepository userRepository, ReqMapper reqMapper, ResMapper resMapper) {
         this.userRepository = userRepository;
         this.reqMapper = reqMapper;
         this.resMapper = resMapper;
@@ -38,42 +39,48 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public void InsertUser(RequestUserDto userDto){
-        User user  =reqMapper.toEntity(userDto);
+    public void insertUser(RequestUserDto userDto) {
+        User user = reqMapper.toEntity(userDto);
         userRepository.save(user);
 
     }
-    public RequestUserDto getUserById(int id){
+
+    public RequestUserDto getUserById(int id) {
         return userRepository.findById(id)
                 .stream()
                 .map(reqMapper)
-                .findFirst().get();
+                .findFirst().orElseThrow(() -> new UserNotFoundException(id));
+
     }
 
-    public void updateUser(RequestUserDto userDto){
-        User user  =reqMapper.toEntity(userDto);
+    public void updateUser(int id ,RequestUserDto userDto) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        user.setFullName(userDto.fullName());
+        user.setAddress(userDto.address());
+        user.setPhoneNumber(userDto.phoneNumber());
         userRepository.save(user);
     }
-    public RequestUserDto patchUser(int id , RequestUserDto userDto){
-        User user = userRepository.findById(id) .orElseThrow();
 
-        if (userDto.fullName() != null){
+    public RequestUserDto patchUser(int id, RequestUserDto userDto) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+
+        if (userDto.fullName() != null) {
             user.setFullName(userDto.fullName());
         }
-        if (userDto.address() != null){
+        if (userDto.address() != null) {
             user.setAddress(userDto.address());
         }
 
 
-         User updated =userRepository.save(user);
+        User updated = userRepository.save(user);
         return reqMapper.apply(updated);
     }
 
-    public void deleteUser(int id){
+    public void deleteUser(int id) {
         userRepository.deleteById(id);
     }
 
-    public boolean checkIfExist(int id){
+    public boolean checkIfExist(int id) {
         return userRepository.existsById(id);
     }
 }

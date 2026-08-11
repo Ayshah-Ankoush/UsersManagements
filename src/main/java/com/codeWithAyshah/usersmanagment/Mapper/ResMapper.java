@@ -6,6 +6,7 @@ import com.codeWithAyshah.usersmanagment.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
+
 @Component
 public class ResMapper implements Function<User, ResponseUserDto> {
 

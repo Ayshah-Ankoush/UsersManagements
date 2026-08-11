@@ -12,15 +12,15 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id ;
-    @Column (name = "fullname")
-    private String fullName ;
+    private int id;
+    @Column(name = "fullname")
+    private String fullName;
     @Column(name = "phonenumber")
-    private String phoneNumber ;
+    private String phoneNumber;
     @Column(name = "address")
-    private  String address;
+    private String address;
 
-    public  User(){
+    public User() {
 
     }
 
