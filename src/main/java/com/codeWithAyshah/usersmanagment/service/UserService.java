@@ -5,8 +5,9 @@ import com.codeWithAyshah.usersmanagment.Mapper.ReqMapper;
 import com.codeWithAyshah.usersmanagment.Mapper.ResMapper;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
-import com.codeWithAyshah.usersmanagment.entity.User;
+import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -82,5 +83,19 @@ public class UserService {
 
     public boolean checkIfExist(int id) {
         return userRepository.existsById(id);
+    }
+    @Transactional(readOnly = true)
+    public void testNPlusOne() {
+
+        List<User> users = userRepository.findAll();
+
+        for (User user : users) {
+            System.out.println(
+                    user.getFullName()
+                            + " has "
+                            + user.getAddresses().size()
+                            + " addresses"
+            );
+        }
     }
 }

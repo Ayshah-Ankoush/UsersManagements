@@ -1,8 +1,7 @@
 package com.codeWithAyshah.usersmanagment.Mapper;
 
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
-import com.codeWithAyshah.usersmanagment.entity.User;
+import com.codeWithAyshah.usersmanagment.models.User;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;

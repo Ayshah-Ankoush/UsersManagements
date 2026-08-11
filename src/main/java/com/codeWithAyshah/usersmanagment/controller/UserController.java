@@ -68,5 +68,10 @@ public class UserController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/test-n-plus-one")
+    public void testNPlusOne() {
+        userService.testNPlusOne();
+    }
+
 
 }

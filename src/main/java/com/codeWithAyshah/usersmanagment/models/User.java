@@ -1,7 +1,10 @@
-package com.codeWithAyshah.usersmanagment.entity;
+package com.codeWithAyshah.usersmanagment.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Arrays.stream;
 
@@ -19,6 +22,9 @@ public class User {
     private String phoneNumber;
     @Column(name = "address")
     private String address;
+
+    @OneToMany(mappedBy = "user" ,fetch = FetchType.LAZY)
+    private List<UserAddresses> addresses;
 
     public User() {
 
