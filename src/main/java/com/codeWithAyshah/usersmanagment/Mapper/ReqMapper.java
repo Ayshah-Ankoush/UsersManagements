@@ -11,7 +11,7 @@ public class ReqMapper implements Function<User, RequestUserDto> {
     @Override
     public RequestUserDto apply(User user) {
         return new RequestUserDto(
-        user.getFullName(), user.getAddress(), user.getPhoneNumber());
+                user.getFullName(), user.getAddress(), user.getPhoneNumber());
     }
 
     public User toEntity(RequestUserDto userDto) {
