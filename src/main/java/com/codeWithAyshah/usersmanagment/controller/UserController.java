@@ -3,6 +3,7 @@ package com.codeWithAyshah.usersmanagment.controller;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.countDto;
+import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +72,11 @@ public class UserController {
     @GetMapping("/test-n-plus-one")
     public void testNPlusOne() {
         userService.testNPlusOne();
+    }
+
+    @PostMapping("/search")
+    public List<RequestUserDto> search(@RequestBody RequestUserDto userDto) {
+        return userService.searchUsers(userDto);
     }
 
 

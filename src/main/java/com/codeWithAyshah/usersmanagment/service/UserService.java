@@ -7,6 +7,7 @@ import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
 import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
+import com.codeWithAyshah.usersmanagment.repository.UserSearchRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +22,13 @@ public class UserService {
     private UserRepository userRepository;
     private ReqMapper reqMapper;
     private ResMapper resMapper;
+    private UserSearchRepository userSearchRepository;
 
-    public UserService(UserRepository userRepository, ReqMapper reqMapper, ResMapper resMapper) {
+    public UserService(UserRepository userRepository, ReqMapper reqMapper, ResMapper resMapper, UserSearchRepository userSearchRepository) {
         this.userRepository = userRepository;
         this.reqMapper = reqMapper;
         this.resMapper = resMapper;
+        this.userSearchRepository = userSearchRepository;
     }
 
 
@@ -84,6 +87,7 @@ public class UserService {
     public boolean checkIfExist(int id) {
         return userRepository.existsById(id);
     }
+
     @Transactional(readOnly = true)
     public void testNPlusOne() {
 
@@ -97,5 +101,14 @@ public class UserService {
                             + " addresses"
             );
         }
+    }
+
+
+    public List<RequestUserDto> searchUsers(RequestUserDto userDto ) {
+      List<User> users =userSearchRepository.finaAllByCriteria(userDto);
+      return users
+              .stream()
+              .map(reqMapper)
+              .collect(Collectors.toList());
     }
 }
