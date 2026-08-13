@@ -54,9 +54,8 @@ public class UserController {
 
     @GetMapping("{id}")
     public ResponseUserDto getUser(@PathVariable int id) {
-
-        Optional<User> user =userService.getUserById(id);
-        return resMapper.apply(user.orElseThrow(() -> new UserNotFoundException(id)));
+        User user =userService.getUserById(id);
+        return resMapper.apply(user);
 
     }
 

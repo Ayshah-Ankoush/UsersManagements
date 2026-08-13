@@ -33,7 +33,7 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return userRepository.findAllByDeletedFalse();
     }
 
     public void insertUser(User user) {
@@ -42,12 +42,12 @@ public class UserService {
 
     }
 
-    public Optional<User> getUserById(int id) {
-        return userRepository.findById(id);
+    public User getUserById(int id) {
+        return userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public void updateUser(int id ,User  user) {
-        user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
         user.setFullName(user.getFullName());
         user.setAddress(user.getAddress());
         user.setPhoneNumber(user.getPhoneNumber());
@@ -55,7 +55,7 @@ public class UserService {
     }
 
     public void patchUser(int id, User user) {
-        user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
 
         if (user.getFullName()!= null) {
             user.setFullName(user.getAddress());
@@ -70,7 +70,9 @@ public class UserService {
     }
 
     public void deleteUser(int id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
+        user.setDeleted(true);
+        userRepository.save(user);
     }
 
     public boolean checkIfExist(int id) {
@@ -80,7 +82,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public void testNPlusOne() {
 
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findAllByDeletedFalse();
 
         for (User user : users) {
             System.out.println(

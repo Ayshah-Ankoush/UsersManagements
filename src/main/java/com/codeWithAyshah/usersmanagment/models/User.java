@@ -22,6 +22,8 @@ public class User {
     private String phoneNumber;
     @Column(name = "address")
     private String address;
+    @Column(name = "deleted")
+    private boolean deleted;
 
 
     @OneToMany(mappedBy = "user" ,fetch = FetchType.LAZY)
@@ -31,11 +33,12 @@ public class User {
 
     }
 
-    public User(int id, String fullName, String phoneNumber, String address) {
+    public User(int id, String fullName, String phoneNumber, String address, boolean deleted) {
         this.id = id;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
         this.address = address;
+        this.deleted = deleted;
     }
 
 }
