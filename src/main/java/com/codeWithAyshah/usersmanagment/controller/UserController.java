@@ -1,23 +1,33 @@
 package com.codeWithAyshah.usersmanagment.controller;
 
+import com.codeWithAyshah.usersmanagment.Mapper.ReqMapper;
+import com.codeWithAyshah.usersmanagment.Mapper.ResMapper;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.countDto;
+import com.codeWithAyshah.usersmanagment.exception.UserNotFoundException;
 import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private UserService userService;
+    private ReqMapper reqMapper;
+    private ResMapper resMapper;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ReqMapper reqMapper, ResMapper resMapper) {
         this.userService = userService;
+        this.reqMapper = new ReqMapper();
+        this.resMapper = new ResMapper();
     }
 
 
@@ -30,30 +40,39 @@ public class UserController {
 
     @GetMapping("/list")
     public List<ResponseUserDto> listUsers() {
-        return userService.getAllUsers();
+        return userService.getAllUsers()
+                .stream()
+                .map(resMapper)
+                .collect(Collectors.toList());
     }
 
     @PostMapping
     public void insert(@RequestBody RequestUserDto userDto) {
-        userService.insertUser(userDto);
+        User user = reqMapper.toEntity(userDto);
+        userService.insertUser(user);
     }
 
     @GetMapping("{id}")
-    public RequestUserDto getUser(@PathVariable int id) {
-        return userService.getUserById(id);
+    public ResponseUserDto getUser(@PathVariable int id) {
+
+        Optional<User> user =userService.getUserById(id);
+        return resMapper.apply(user.orElseThrow(() -> new UserNotFoundException(id)));
+
     }
 
     @PutMapping("{id}")
     public void update(@RequestBody RequestUserDto userDto ,@PathVariable int id ) {//updateUserReq
-        userService.updateUser(id ,userDto);
+        User user = reqMapper.toEntity(userDto);
+        userService.updateUser(id ,user);
     }
 
     @PatchMapping("/{id}")
-    public RequestUserDto patch(
+    public void patch(
             @PathVariable("id") int id,
             @RequestBody RequestUserDto userDto
     ) {
-        return userService.patchUser(id, userDto);
+        User user = reqMapper.toEntity(userDto);
+        userService.patchUser(id, user);
     }
 
     @DeleteMapping("/{id}")
@@ -76,7 +95,12 @@ public class UserController {
 
     @PostMapping("/search")
     public List<RequestUserDto> search(@RequestBody RequestUserDto userDto) {
-        return userService.searchUsers(userDto);
+
+       List<User> users =  userService.searchUsers(userDto);
+       return users
+               .stream()
+               .map(reqMapper)
+               .collect(Collectors.toList());
     }
 
 

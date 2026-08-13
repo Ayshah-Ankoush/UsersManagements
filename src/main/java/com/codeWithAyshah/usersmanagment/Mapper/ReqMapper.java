@@ -19,7 +19,7 @@ public class ReqMapper implements Function<User, RequestUserDto> {
         //user.setId(userDto.Id());
         user.setFullName(userDto.fullName());
         user.setAddress(userDto.address());
-        user.setPhoneNumber(userDto.phoneNumber());
+       // user.setPhoneNumber(userDto.phoneNumber());
         return user;
     }
 }

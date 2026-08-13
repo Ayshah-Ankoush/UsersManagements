@@ -23,6 +23,7 @@ public class User {
     @Column(name = "address")
     private String address;
 
+
     @OneToMany(mappedBy = "user" ,fetch = FetchType.LAZY)
     private List<UserAddresses> addresses;
 

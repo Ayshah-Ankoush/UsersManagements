@@ -12,22 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+
 
 @Service
 public class UserService {
 
-    // User users = Arrays.asList();
 
     private UserRepository userRepository;
-    private ReqMapper reqMapper;
-    private ResMapper resMapper;
     private UserSearchRepository userSearchRepository;
 
-    public UserService(UserRepository userRepository, ReqMapper reqMapper, ResMapper resMapper, UserSearchRepository userSearchRepository) {
+    public UserService(UserRepository userRepository,  UserSearchRepository userSearchRepository) {
         this.userRepository = userRepository;
-        this.reqMapper = reqMapper;
-        this.resMapper = resMapper;
         this.userSearchRepository = userSearchRepository;
     }
 
@@ -36,48 +32,41 @@ public class UserService {
         return userRepository.count();
     }
 
-    public List<ResponseUserDto> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(resMapper)
-                .collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    public void insertUser(RequestUserDto userDto) {
-        User user = reqMapper.toEntity(userDto);
+    public void insertUser(User user) {
+
         userRepository.save(user);
 
     }
 
-    public RequestUserDto getUserById(int id) {
-        return userRepository.findById(id)
-                .stream()
-                .map(reqMapper)
-                .findFirst().orElseThrow(() -> new UserNotFoundException(id));
-
+    public Optional<User> getUserById(int id) {
+        return userRepository.findById(id);
     }
 
-    public void updateUser(int id ,RequestUserDto userDto) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
-        user.setFullName(userDto.fullName());
-        user.setAddress(userDto.address());
-        user.setPhoneNumber(userDto.phoneNumber());
+    public void updateUser(int id ,User  user) {
+        user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        user.setFullName(user.getFullName());
+        user.setAddress(user.getAddress());
+        user.setPhoneNumber(user.getPhoneNumber());
         userRepository.save(user);
     }
 
-    public RequestUserDto patchUser(int id, RequestUserDto userDto) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    public void patchUser(int id, User user) {
+        user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
-        if (userDto.fullName() != null) {
-            user.setFullName(userDto.fullName());
+        if (user.getFullName()!= null) {
+            user.setFullName(user.getAddress());
         }
-        if (userDto.address() != null) {
-            user.setAddress(userDto.address());
+        if (user.getAddress() != null) {
+            user.setAddress(user.getAddress());
         }
 
 
         User updated = userRepository.save(user);
-        return reqMapper.apply(updated);
+
     }
 
     public void deleteUser(int id) {
@@ -104,11 +93,11 @@ public class UserService {
     }
 
 
-    public List<RequestUserDto> searchUsers(RequestUserDto userDto ) {
+    public List<User> searchUsers(RequestUserDto userDto ) {
       List<User> users =userSearchRepository.finaAllByCriteria(userDto);
-      return users
-              .stream()
-              .map(reqMapper)
-              .collect(Collectors.toList());
+      return users;
+              //.stream()
+             // .map(reqMapper)
+              //.collect(Collectors.toList());
     }
 }
