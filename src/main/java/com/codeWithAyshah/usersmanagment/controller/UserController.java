@@ -9,6 +9,10 @@ import com.codeWithAyshah.usersmanagment.exception.UserNotFoundException;
 import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.models.UserAddresses;
 import com.codeWithAyshah.usersmanagment.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -109,6 +113,16 @@ public class UserController {
                .stream()
                .map(reqMapper)
                .collect(Collectors.toList());
+    }
+    @RequestMapping("paging/list")
+    public Page<ResponseUserDto> simplePaging(
+            @RequestParam (defaultValue = "0") int page ,
+            @RequestParam (defaultValue = "5") int size)
+    {
+       Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
+       Page<User> users= userService.getAllUsersUsingSimplePagination(pageable);
+       return users.map(resMapper);
+
     }
 
 

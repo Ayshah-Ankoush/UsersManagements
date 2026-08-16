@@ -9,6 +9,8 @@ import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.models.UserAddresses;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
 import com.codeWithAyshah.usersmanagment.repository.UserSearchRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -105,4 +107,10 @@ public class UserService {
       return users;
 
     }
+
+    public Page<User> getAllUsersUsingSimplePagination(Pageable  pageable) {
+        return userRepository.findAllByDeletedFalse(pageable);
+    }
+
+
 }
