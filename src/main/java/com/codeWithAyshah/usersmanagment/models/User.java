@@ -20,25 +20,31 @@ public class User {
     private String fullName;
     @Column(name = "phonenumber")
     private String phoneNumber;
-    @Column(name = "address")
-    private String address;
     @Column(name = "deleted")
     private boolean deleted;
 
 
-    @OneToMany(mappedBy = "user" ,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user" ,cascade =CascadeType.ALL,orphanRemoval = true,fetch = FetchType.LAZY)
     private List<UserAddresses> addresses;
 
     public User() {
 
     }
 
-    public User(int id, String fullName, String phoneNumber, String address, boolean deleted) {
+    public User(int id, String fullName, String phoneNumber, boolean deleted) {
         this.id = id;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
-        this.address = address;
         this.deleted = deleted;
+    }
+    public void addAddress(UserAddresses address) {
+        addresses.add(address);
+        address.setUser(this);
+    }
+
+    public void removeAddress(UserAddresses address) {
+        addresses.remove(address);
+        address.setUser(null);
     }
 
 }

@@ -8,7 +8,6 @@ import java.util.List;
 public record RequestUserDto(
 
         String fullName,
-        String address,
         String phoneNumber
 ) {
 }

@@ -6,6 +6,7 @@ import com.codeWithAyshah.usersmanagment.Mapper.ResMapper;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
 import com.codeWithAyshah.usersmanagment.models.User;
+import com.codeWithAyshah.usersmanagment.models.UserAddresses;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
 import com.codeWithAyshah.usersmanagment.repository.UserSearchRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,6 @@ public class UserService {
         this.userSearchRepository = userSearchRepository;
     }
 
-
     public long countUsers() {
         return userRepository.count();
     }
@@ -37,7 +37,6 @@ public class UserService {
     }
 
     public void insertUser(User user) {
-
         userRepository.save(user);
 
     }
@@ -46,26 +45,22 @@ public class UserService {
         return userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    public void updateUser(int id ,User  user) {
-        user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
-        user.setFullName(user.getFullName());
-        user.setAddress(user.getAddress());
-        user.setPhoneNumber(user.getPhoneNumber());
-        userRepository.save(user);
+    public void updateUser(int id ,User  newuser) {
+        User existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
+        existingUser.setFullName(newuser.getFullName());
+        //user.setPhoneNumber(user.getPhoneNumber());
+        userRepository.save(existingUser);
     }
 
-    public void patchUser(int id, User user) {
-        user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
+    public void patchUser(int id, User newuser) {
+       User  existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
 
-        if (user.getFullName()!= null) {
-            user.setFullName(user.getAddress());
-        }
-        if (user.getAddress() != null) {
-            user.setAddress(user.getAddress());
+        if (newuser.getFullName()!= null) {
+            existingUser.setFullName(newuser.getFullName());
         }
 
 
-        User updated = userRepository.save(user);
+        User updated = userRepository.save(existingUser);
 
     }
 
@@ -93,13 +88,21 @@ public class UserService {
             );
         }
     }
+    public void addAddress(int userId, UserAddresses address) {
+
+        User existingUser = userRepository
+                .findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        existingUser.addAddress(address);
+
+        userRepository.save(existingUser);
+    }
 
 
     public List<User> searchUsers(RequestUserDto userDto ) {
       List<User> users =userSearchRepository.finaAllByCriteria(userDto);
       return users;
-              //.stream()
-             // .map(reqMapper)
-              //.collect(Collectors.toList());
+
     }
 }

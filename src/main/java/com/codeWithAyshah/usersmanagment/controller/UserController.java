@@ -7,6 +7,7 @@ import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.countDto;
 import com.codeWithAyshah.usersmanagment.exception.UserNotFoundException;
 import com.codeWithAyshah.usersmanagment.models.User;
+import com.codeWithAyshah.usersmanagment.models.UserAddresses;
 import com.codeWithAyshah.usersmanagment.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,13 +22,13 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private UserService userService;
-    private ReqMapper reqMapper;
-    private ResMapper resMapper;
+    private ReqMapper reqMapper =  new ReqMapper();
+    private ResMapper resMapper =   new ResMapper();
 
     public UserController(UserService userService, ReqMapper reqMapper, ResMapper resMapper) {
         this.userService = userService;
-        this.reqMapper = new ReqMapper();
-        this.resMapper = new ResMapper();
+        this.reqMapper = reqMapper;
+        this.resMapper = resMapper;
     }
 
 
@@ -90,6 +91,14 @@ public class UserController {
     @GetMapping("/test-n-plus-one")
     public void testNPlusOne() {
         userService.testNPlusOne();
+    }
+
+    @PostMapping("/{userId}/addresses")
+    public void addAddress(
+            @PathVariable int userId,
+            @RequestBody UserAddresses address
+    ) {
+        userService.addAddress(userId, address);
     }
 
     @PostMapping("/search")

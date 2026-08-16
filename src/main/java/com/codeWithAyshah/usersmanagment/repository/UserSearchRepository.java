@@ -58,10 +58,6 @@ public class UserSearchRepository {
             Predicate namePredicate = criteriaBuilder.like(root.get("fullName"), "%" + requestUserDto.fullName() + "%");
             predicates.add(namePredicate);
         }
-        if (requestUserDto.address() !=null){
-            Predicate addressPredicate =  criteriaBuilder.like(root.get("address"), "%" + requestUserDto.address() + "%");
-            predicates.add(addressPredicate);
-        }
         if (requestUserDto.phoneNumber() !=null){
             Predicate phonePredicate = criteriaBuilder.like(root.get("phoneNumber"), "%" + requestUserDto.phoneNumber() + "%");
             predicates.add(phonePredicate);
