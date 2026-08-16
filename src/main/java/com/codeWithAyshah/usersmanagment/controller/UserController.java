@@ -135,6 +135,16 @@ public class UserController {
         return users.map(resMapper);
 
     }
+    @RequestMapping("JPQL/list")
+    public Page<ResponseUserDto> JPQLPaging(
+            @RequestParam (defaultValue = "0") int page ,
+            @RequestParam (defaultValue = "5") int size)
+    {
+        Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
+        Page<User> users= userService.getAllUsersJPQLPageable(pageable);
+        return users.map(resMapper);
+
+    }
 
 
 }

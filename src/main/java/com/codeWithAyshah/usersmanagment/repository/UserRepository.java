@@ -44,5 +44,15 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Page<User> findActiveByDeletedFalseNative(Pageable pageable);
 
+    //JPQL
+    @Query (value =
+            """
+       SELECT u 
+       FROM User u
+       WHERE u.deleted = false
+       ORDER BY id ASC
+        """)
+    Page<User> findAllActiveByDeletedFalseJPQL(Pageable pageable);
+
 
 }

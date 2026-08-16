@@ -116,5 +116,9 @@ public class UserService {
         return userRepository.findActiveByDeletedFalseNative(pageable);
     }
 
+    public Page<User> getAllUsersJPQLPageable(Pageable pageable) {
+        return userRepository.findAllActiveByDeletedFalseJPQL(pageable);
+    }
+
 
 }
