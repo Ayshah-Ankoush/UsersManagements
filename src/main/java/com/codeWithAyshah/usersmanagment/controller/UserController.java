@@ -1,11 +1,7 @@
 package com.codeWithAyshah.usersmanagment.controller;
 
-import com.codeWithAyshah.usersmanagment.Mapper.ReqMapper;
-import com.codeWithAyshah.usersmanagment.Mapper.ResMapper;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.countDto;
-import com.codeWithAyshah.usersmanagment.exception.UserNotFoundException;
+import com.codeWithAyshah.usersmanagment.Mapper.UserMapper;
+import com.codeWithAyshah.usersmanagment.controller.UserDTO.*;
 import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.models.UserAddresses;
 import com.codeWithAyshah.usersmanagment.service.UserService;
@@ -17,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -26,66 +21,65 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private UserService userService;
-    private ReqMapper reqMapper =  new ReqMapper();
-    private ResMapper resMapper =   new ResMapper();
+    private UserMapper userMapper ;
 
-    public UserController(UserService userService, ReqMapper reqMapper, ResMapper resMapper) {
+    public UserController(UserService userService,UserMapper userMapper) {
         this.userService = userService;
-        this.reqMapper = reqMapper;
-        this.resMapper = resMapper;
+        this.userMapper =userMapper;
     }
 
 
 
     @GetMapping("/count")
-    public countDto count() {
+    public long  countActiveUsers() {
         long count = userService.countUsers();
-        return new countDto(count);
+        return count;
     }
 
-    @GetMapping("/list")
-    public List<ResponseUserDto> listUsers() {
+    @GetMapping("/getUsers")
+    public List<UserResponse> getUsers() {
         return userService.getAllUsers()
                 .stream()
-                .map(resMapper)
+                .map(userMapper::userToUserResponse)
                 .collect(Collectors.toList());
     }
 
     @PostMapping
-    public void insert(@RequestBody RequestUserDto userDto) {
-        User user = reqMapper.toEntity(userDto);
+    public void creatUser(@RequestBody CreatUserRequest creatUserRequests) {
+        User user = userMapper.creatUserRequestToUser(creatUserRequests);
         userService.insertUser(user);
     }
 
     @GetMapping("{id}")
-    public ResponseUserDto getUser(@PathVariable int id) {
+    public UserResponse getUser(@PathVariable Integer id) {
         User user =userService.getUserById(id);
-        return resMapper.apply(user);
+        return userMapper.userToUserResponse(user);
 
     }
 
     @PutMapping("{id}")
-    public void update(@RequestBody RequestUserDto userDto ,@PathVariable int id ) {//updateUserReq
-        User user = reqMapper.toEntity(userDto);
+    public void update(@RequestBody CreatUserRequest creatUserRequest , @PathVariable Integer id ) {//updateUserReq
+        User user = userMapper.creatUserRequestToUser(creatUserRequest);
         userService.updateUser(id ,user);
     }
 
     @PatchMapping("/{id}")
-    public void patch(
-            @PathVariable("id") int id,
-            @RequestBody RequestUserDto userDto
+    public void updateUserPartially(
+            @PathVariable("id") Integer id,
+            @RequestBody UpdateUserRequest updateUserRequest
     ) {
-        User user = reqMapper.toEntity(userDto);
-        userService.patchUser(id, user);
+        User updatedUser = userMapper.updateUserRequestToUser(updateUserRequest);
+        userService.updateUserPartially(id ,updatedUser);
+
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable int id) {
+    public void deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
     }
 
     @RequestMapping(value = "{id}", method = RequestMethod.HEAD)
-    public ResponseEntity<Void> head(@PathVariable int id) {
+    public ResponseEntity<Void> checkUserExists(@PathVariable Integer id) {
         if (userService.checkIfExist(id)) {
             return ResponseEntity.ok().build();
         }
@@ -99,51 +93,70 @@ public class UserController {
 
     @PostMapping("/{userId}/addresses")
     public void addAddress(
-            @PathVariable int userId,
+            @PathVariable Integer userId,
             @RequestBody UserAddresses address
     ) {
         userService.addAddress(userId, address);
     }
 
     @PostMapping("/search")
-    public List<RequestUserDto> search(@RequestBody RequestUserDto userDto) {
-
-       List<User> users =  userService.searchUsers(userDto);
-       return users
-               .stream()
-               .map(reqMapper)
-               .collect(Collectors.toList());
+    public List<UserResponse> search(
+            @RequestBody UserFilterRequest filter
+    ) {
+        return userService.searchUsers(filter)
+                .stream()
+                .map(userMapper::userToUserResponse)
+                .toList();
     }
-    @RequestMapping("simple/list")
-    public Page<ResponseUserDto> simplePaging(
-            @RequestParam (defaultValue = "0") int page ,
-            @RequestParam (defaultValue = "5") int size)
+    @RequestMapping("/pagination/simple")
+    public Page<UserResponse> simplePaging(
+            @RequestParam (defaultValue = "0") Integer page ,
+            @RequestParam (defaultValue = "5") Integer size)
     {
        Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
        Page<User> users= userService.getAllUsersUsingSimplePagination(pageable);
-       return users.map(resMapper);
+       return users.map(userMapper::userToUserResponse);
 
     }
 
-    @RequestMapping("native/list")
-    public Page<ResponseUserDto> nativePaging(
-            @RequestParam (defaultValue = "0") int page ,
-            @RequestParam (defaultValue = "5") int size)
+    @RequestMapping("/pagination/native")
+    public Page<UserResponse> nativePaging(
+            @RequestParam (defaultValue = "0") Integer page ,
+            @RequestParam (defaultValue = "5") Integer size)
     {
         Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
         Page<User> users= userService.getAllUsersNativePageable(pageable);
-        return users.map(resMapper);
+        return users.map(userMapper::userToUserResponse);
 
     }
-    @RequestMapping("JPQL/list")
-    public Page<ResponseUserDto> JPQLPaging(
-            @RequestParam (defaultValue = "0") int page ,
-            @RequestParam (defaultValue = "5") int size)
+    @RequestMapping("/pagination/JPQL")
+    public Page<UserResponse> JPQLPaging(
+            @RequestParam (defaultValue = "0") Integer page ,
+            @RequestParam (defaultValue = "5") Integer size)
     {
         Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
         Page<User> users= userService.getAllUsersJPQLPageable(pageable);
-        return users.map(resMapper);
+        return users.map(userMapper::userToUserResponse);
 
+    }
+    @PostMapping("/pagination/criteria")
+    public Page<UserResponse> criteriaPagination(
+            @RequestBody UserFilterRequest filters,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("id").ascending()
+        );
+
+        Page<User> users = userService.criteriaPagination(
+                filters,
+                pageable
+        );
+
+        return users.map(userMapper::userToUserResponse);
     }
 
 

@@ -1,10 +1,8 @@
 package com.codeWithAyshah.usersmanagment.service;
 
-import com.codeWithAyshah.usersmanagment.exception.UserNotFoundException;
-import com.codeWithAyshah.usersmanagment.Mapper.ReqMapper;
-import com.codeWithAyshah.usersmanagment.Mapper.ResMapper;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
+import com.codeWithAyshah.usersmanagment.controller.UserDTO.UserFilterRequest;
+import com.codeWithAyshah.usersmanagment.exception.ResourceNotFoundException;
+import com.codeWithAyshah.usersmanagment.controller.UserDTO.CreatUserRequest;
 import com.codeWithAyshah.usersmanagment.models.User;
 import com.codeWithAyshah.usersmanagment.models.UserAddresses;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
@@ -15,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -43,19 +40,19 @@ public class UserService {
 
     }
 
-    public User getUserById(int id) {
-        return userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
+    public User getUserById(Integer id) {
+        return userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
     }
 
-    public void updateUser(int id ,User  newuser) {
-        User existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
+    public void updateUser(Integer id ,User  newuser) {
+        User existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
         existingUser.setFullName(newuser.getFullName());
         //user.setPhoneNumber(user.getPhoneNumber());
         userRepository.save(existingUser);
     }
 
-    public void patchUser(int id, User newuser) {
-       User  existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
+    public User updateUserPartially(Integer id, User newuser) {
+       User  existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
 
         if (newuser.getFullName()!= null) {
             existingUser.setFullName(newuser.getFullName());
@@ -63,16 +60,17 @@ public class UserService {
 
 
         User updated = userRepository.save(existingUser);
+        return updated;
 
     }
 
-    public void deleteUser(int id) {
-        User user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new UserNotFoundException(id));
+    public void deleteUser(Integer id) {
+        User user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
         user.setDeleted(true);
         userRepository.save(user);
     }
 
-    public boolean checkIfExist(int id) {
+    public boolean checkIfExist(Integer id) {
         return userRepository.existsById(id);
     }
 
@@ -90,11 +88,11 @@ public class UserService {
             );
         }
     }
-    public void addAddress(int userId, UserAddresses address) {
+    public void addAddress(Integer userId, UserAddresses address) {
 
         User existingUser = userRepository
                 .findByIdAndDeletedFalse(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User",userId));
 
         existingUser.addAddress(address);
 
@@ -102,8 +100,8 @@ public class UserService {
     }
 
 
-    public List<User> searchUsers(RequestUserDto userDto ) {
-      List<User> users =userSearchRepository.finaAllByCriteria(userDto);
+    public List<User> searchUsers(UserFilterRequest userFilterRequest ) {
+      List<User> users =userSearchRepository.finaAllByCriteria(userFilterRequest);
       return users;
 
     }
@@ -118,6 +116,12 @@ public class UserService {
 
     public Page<User> getAllUsersJPQLPageable(Pageable pageable) {
         return userRepository.findAllActiveByDeletedFalseJPQL(pageable);
+    }
+    public Page<User> criteriaPagination(
+            UserFilterRequest filters,
+            Pageable pageable
+    ) {
+        return userRepository.findUsers(filters, pageable);
     }
 
 

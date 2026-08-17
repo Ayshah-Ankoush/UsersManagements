@@ -15,8 +15,8 @@ public class GlobalExceptionHandler {
         this.slackNotificationService = slackNotificationService;
     }
 
-    @ExceptionHandler(value = UserNotFoundException.class)
-    public ResponseEntity<String> handleException(UserNotFoundException e) {
+    @ExceptionHandler(value = ResourceNotFoundException.class)
+    public ResponseEntity<String> handleException(ResourceNotFoundException e) {
         slackNotificationService.sendMessage(
                 e.getMessage()
         );

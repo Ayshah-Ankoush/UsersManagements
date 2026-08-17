@@ -1,10 +1,9 @@
 package com.codeWithAyshah.usersmanagment.repository;
 
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
+import com.codeWithAyshah.usersmanagment.controller.UserDTO.CreatUserRequest;
+import com.codeWithAyshah.usersmanagment.controller.UserDTO.UserFilterRequest;
 import com.codeWithAyshah.usersmanagment.models.User;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -45,7 +44,7 @@ public class UserSearchRepository {
     }
 
 
-    public List<User>finaAllByCriteria(RequestUserDto requestUserDto) {
+    public List<User>finaAllByCriteria(UserFilterRequest userFilterRequest) {
 
         CriteriaBuilder criteriaBuilder=entityManager.getCriteriaBuilder();
         CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
@@ -54,13 +53,16 @@ public class UserSearchRepository {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        if (requestUserDto.fullName() !=null){
-            Predicate namePredicate = criteriaBuilder.like(root.get("fullName"), "%" + requestUserDto.fullName() + "%");
+        if (userFilterRequest.getFullName() !=null){
+            Predicate namePredicate = criteriaBuilder.like(root.get("fullName"), "%" + userFilterRequest.getFullName() + "%");
             predicates.add(namePredicate);
         }
-        if (requestUserDto.phoneNumber() !=null){
-            Predicate phonePredicate = criteriaBuilder.like(root.get("phoneNumber"), "%" + requestUserDto.phoneNumber() + "%");
+        if (userFilterRequest.getPhoneNumber() !=null){
+            Predicate phonePredicate = criteriaBuilder.like(root.get("phoneNumber"), "%" + userFilterRequest.getPhoneNumber() + "%");
             predicates.add(phonePredicate);
+        }
+        if (userFilterRequest.getCity() !=null){
+            Predicate cityPredicate = criteriaBuilder.like(root.get("city"), "%" + userFilterRequest.getCity() + "%");
         }
 
 

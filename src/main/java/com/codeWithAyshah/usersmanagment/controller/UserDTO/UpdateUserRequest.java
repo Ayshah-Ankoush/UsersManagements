@@ -1,13 +1,13 @@
 package com.codeWithAyshah.usersmanagment.controller.UserDTO;
 
-
 import com.codeWithAyshah.usersmanagment.models.UserAddresses;
+import lombok.Data;
 
 import java.util.List;
 
-public record RequestUserDto(
+@Data
+public class UpdateUserRequest {
 
-        String fullName,
-        String phoneNumber
-) {
+    private String fullName;
+    private List<UserAddresses> addresses;
 }
