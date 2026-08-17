@@ -54,5 +54,23 @@ public interface UserRepository extends JpaRepository<User, Integer> ,UserCriter
         """)
     Page<User> findAllActiveByDeletedFalseJPQL(Pageable pageable);
 
+    //join fetch
+
+    @Query(value = """
+         SELECT DISTINCT  u
+         FROM User u
+         LEFT JOIN FETCH u.addresses
+         WHERE u.deleted = false
+         ORDER BY u.id
+                """,
+         countQuery = """
+            SELECT COUNT (u)
+            FROM User u
+            WHERE u.deleted= false
+                
+"""
+    )
+    Page<User> findAllActiveWithAddresses(Pageable pageable);
+
 
 }

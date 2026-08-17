@@ -125,4 +125,11 @@ public class UserService {
     }
 
 
+    public Page<User> getUsersWithAddresses(
+            Pageable pageable
+    ) {
+        return userRepository.findAllActiveWithAddresses(pageable);
+    }
+
+
 }
