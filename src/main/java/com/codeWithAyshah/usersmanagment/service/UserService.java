@@ -1,79 +1,163 @@
 package com.codeWithAyshah.usersmanagment.service;
 
-import com.codeWithAyshah.usersmanagment.Mapper.ReqMapper;
-import com.codeWithAyshah.usersmanagment.Mapper.ResMapper;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.RequestUserDto;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.ResponseUserDto;
-import com.codeWithAyshah.usersmanagment.entity.User;
+import com.codeWithAyshah.usersmanagment.controller.UserDTO.UserFilterRequest;
+import com.codeWithAyshah.usersmanagment.exception.ResourceNotFoundException;
+import com.codeWithAyshah.usersmanagment.model.User;
+import com.codeWithAyshah.usersmanagment.model.UserAddress;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
+import com.codeWithAyshah.usersmanagment.repository.UserSearchRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 public class UserService {
 
-   // User users = Arrays.asList();
 
-    private UserRepository  userRepository;
-    private ReqMapper reqMapper;
-    private ResMapper resMapper;
+    private UserRepository userRepository;
+    private UserSearchRepository userSearchRepository;
 
-    public UserService(UserRepository userRepository , ReqMapper reqMapper, ResMapper resMapper) {
+    public UserService(UserRepository userRepository,  UserSearchRepository userSearchRepository) {
         this.userRepository = userRepository;
-        this.reqMapper = reqMapper;
-        this.resMapper = resMapper;
+        this.userSearchRepository = userSearchRepository;
     }
-
 
     public long countUsers() {
         return userRepository.count();
     }
 
-    public List<ResponseUserDto> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(resMapper)
-                .collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        return userRepository.findAllByDeletedFalse();
     }
 
-    public void InsertUser(RequestUserDto userDto){
-        User user  =reqMapper.toEntity(userDto);
+    public void insertUser(User user) {
         userRepository.save(user);
 
     }
-    public RequestUserDto getUserById(int id){
-        return userRepository.findById(id)
-                .stream()
-                .map(reqMapper)
-                .findFirst().get();
+
+    public User getUserById(Integer id) {
+        return userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
     }
 
-    public void updateUser(RequestUserDto userDto){
-        User user  =reqMapper.toEntity(userDto);
+    @Transactional
+    public User updateUser(Integer id, User newUser) {
+        User existingUser = userRepository
+                .findByIdAndDeletedFalse(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User", id)
+                );
+
+        existingUser.setFullName(newUser.getFullName());
+        existingUser.setPhoneNumber(newUser.getPhoneNumber());
+
+        existingUser.getAddresses().clear();
+
+        for (UserAddress address : newUser.getAddresses()) {
+            address.setId(null);
+            existingUser.addAddress(address);
+        }
+
+        return userRepository.save(existingUser);
+    }
+
+    @Transactional
+    public User updateUserPartially(Integer id, User newUser) {
+        User existingUser = userRepository
+                .findByIdAndDeletedFalse(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User", id)
+                );
+
+        if (newUser.getFullName() != null) {
+            existingUser.setFullName(newUser.getFullName());
+        }
+
+        if (newUser.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(newUser.getPhoneNumber());
+        }
+
+        if (newUser.getAddresses() != null) {
+            existingUser.getAddresses().clear();
+
+            for (UserAddress address : newUser.getAddresses()) {
+                address.setId(null);
+                existingUser.addAddress(address);
+            }
+        }
+
+        return userRepository.save(existingUser);
+    }
+
+    public void deleteUser(Integer id) {
+        User user = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
+        user.setDeleted(true);
         userRepository.save(user);
     }
-    public RequestUserDto patchUser(int id , RequestUserDto userDto){
-        User user = userRepository.findById(id) .orElseThrow();
 
-        if (userDto.fullName() != null){
-            user.setFullName(userDto.fullName());
-        }
-        if (userDto.address() != null){
-            user.setAddress(userDto.address());
-        }
-
-
-         User updated =userRepository.save(user);
-        return reqMapper.apply(updated);
-    }
-
-    public void deleteUser(int id){
-        userRepository.deleteById(id);
-    }
-
-    public boolean checkIfExist(int id){
+    public boolean checkIfExist(Integer id) {
         return userRepository.existsById(id);
     }
+
+    @Transactional(readOnly = true)
+    public void testNPlusOne() {
+
+        List<User> users = userRepository.findAllByDeletedFalse();
+
+        for (User user : users) {
+            System.out.println(
+                    user.getFullName()
+                            + " has "
+                            + user.getAddresses().size()
+                            + " addresses"
+            );
+        }
+    }
+    public void addAddress(Integer userId, UserAddress address) {
+
+        User existingUser = userRepository
+                .findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User",userId));
+
+        existingUser.addAddress(address);
+
+        userRepository.save(existingUser);
+    }
+
+
+    public List<User> searchUsers(UserFilterRequest userFilterRequest ) {
+      List<User> users =userSearchRepository.finaAllByCriteria(userFilterRequest);
+      return users;
+
+    }
+
+    public Page<User> getAllUsersUsingSimplePagination(Pageable  pageable) {
+        return userRepository.findAllByDeletedFalse(pageable);
+    }
+
+    public Page<User> getAllUsersNativePageable(Pageable pageable) {
+        return userRepository.findActiveByDeletedFalseNative(pageable);
+    }
+
+    public Page<User> getAllUsersJPQLPageable(Pageable pageable) {
+        return userRepository.findAllActiveByDeletedFalseJPQL(pageable);
+    }
+    public Page<User> criteriaPagination(
+            UserFilterRequest filters,
+            Pageable pageable
+    ) {
+        return userRepository.findUsers(filters, pageable);
+    }
+
+
+    public Page<User> getUsersWithAddresses(
+            Pageable pageable
+    ) {
+        return userRepository.findAllActiveWithAddresses(pageable);
+    }
+
+
 }
