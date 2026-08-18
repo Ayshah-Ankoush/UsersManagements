@@ -2,13 +2,15 @@ package com.codeWithAyshah.usersmanagment.controller;
 
 import com.codeWithAyshah.usersmanagment.Mapper.UserMapper;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.*;
-import com.codeWithAyshah.usersmanagment.models.User;
-import com.codeWithAyshah.usersmanagment.models.UserAddresses;
+import com.codeWithAyshah.usersmanagment.model.User;
+import com.codeWithAyshah.usersmanagment.model.UserAddress;
 import com.codeWithAyshah.usersmanagment.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,23 +23,22 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private UserService userService;
-    private UserMapper userMapper ;
+    private UserMapper userMapper;
 
-    public UserController(UserService userService,UserMapper userMapper) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
-        this.userMapper =userMapper;
+        this.userMapper = userMapper;
     }
-
 
 
     @GetMapping("/count")
-    public long  countActiveUsers() {
-        long count = userService.countUsers();
+    public Long countActiveUsers() {
+        Long count = userService.countUsers();
         return count;
     }
 
-    @GetMapping("/getUsers")
-    public List<UserResponse> getUsers() {
+    @GetMapping
+    public List<UserDTO> getUsers() {
         return userService.getAllUsers()
                 .stream()
                 .map(userMapper::userToUserResponse)
@@ -45,22 +46,22 @@ public class UserController {
     }
 
     @PostMapping
-    public void creatUser(@RequestBody CreatUserRequest creatUserRequests) {
-        User user = userMapper.creatUserRequestToUser(creatUserRequests);
+    public void creatUser(@RequestBody CreateUserRequest creatUserRequests) {
+        User user = userMapper.createUserRequestToUser(creatUserRequests);
         userService.insertUser(user);
     }
 
-    @GetMapping("{id}")
-    public UserResponse getUser(@PathVariable Integer id) {
-        User user =userService.getUserById(id);
+    @GetMapping("/{id}")
+    public UserDTO getUser(@PathVariable Integer id) {
+        User user = userService.getUserById(id);
         return userMapper.userToUserResponse(user);
 
     }
 
-    @PutMapping("{id}")
-    public void update(@RequestBody CreatUserRequest creatUserRequest , @PathVariable Integer id ) {//updateUserReq
-        User user = userMapper.creatUserRequestToUser(creatUserRequest);
-        userService.updateUser(id ,user);
+    @PutMapping("/{id}")
+    public void update(@Valid @RequestBody UpdateUserRequest updateUserRequest, @PathVariable Integer id) {//updateUserReq
+        User user = userMapper.updateUserRequestToUser(updateUserRequest);
+        userService.updateUser(id, user);
     }
 
     @PatchMapping("/{id}")
@@ -69,14 +70,17 @@ public class UserController {
             @RequestBody UpdateUserRequest updateUserRequest
     ) {
         User updatedUser = userMapper.updateUserRequestToUser(updateUserRequest);
-        userService.updateUserPartially(id ,updatedUser);
+        userService.updateUserPartially(id, updatedUser);
 
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
+
+        return ResponseEntity.ok().build();
     }
+
 
     @RequestMapping(value = "{id}", method = RequestMethod.HEAD)
     public ResponseEntity<Void> checkUserExists(@PathVariable Integer id) {
@@ -92,15 +96,15 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/addresses")
-    public void addAddress(
+    public void createUserAddress(
             @PathVariable Integer userId,
-            @RequestBody UserAddresses address
+            @RequestBody UserAddress address
     ) {
         userService.addAddress(userId, address);
     }
 
     @PostMapping("/search")
-    public List<UserResponse> search(
+    public List<UserDTO> search(
             @RequestBody UserFilterRequest filter
     ) {
         return userService.searchUsers(filter)
@@ -108,48 +112,56 @@ public class UserController {
                 .map(userMapper::userToUserResponse)
                 .toList();
     }
+
     @RequestMapping("/pagination/simple")
-    public Page<UserResponse> simplePaging(
-            @RequestParam (defaultValue = "0") Integer page ,
-            @RequestParam (defaultValue = "5") Integer size)
-    {
-       Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
-       Page<User> users= userService.getAllUsersUsingSimplePagination(pageable);
-       return users.map(userMapper::userToUserResponse);
+    public Page<UserDTO> simplePaging(
+            @PageableDefault(
+                    page = 0,
+                    size = 5,
+                    sort = "id",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+
+        Page<User> users = userService.getAllUsersUsingSimplePagination(pageable);
+        return users.map(userMapper::userToUserResponse);
 
     }
 
     @RequestMapping("/pagination/native")
-    public Page<UserResponse> nativePaging(
-            @RequestParam (defaultValue = "0") Integer page ,
-            @RequestParam (defaultValue = "5") Integer size)
-    {
-        Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
-        Page<User> users= userService.getAllUsersNativePageable(pageable);
+    public Page<UserDTO> nativePaging(
+            @PageableDefault(
+                    page = 0,
+                    size = 5,
+                    sort = "id",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+        Page<User> users = userService.getAllUsersNativePageable(pageable);
         return users.map(userMapper::userToUserResponse);
 
     }
+
     @RequestMapping("/pagination/JPQL")
-    public Page<UserResponse> JPQLPaging(
-            @RequestParam (defaultValue = "0") Integer page ,
-            @RequestParam (defaultValue = "5") Integer size)
-    {
-        Pageable pageable = PageRequest.of(page ,size , Sort.by("id").ascending());
-        Page<User> users= userService.getAllUsersJPQLPageable(pageable);
+    public Page<UserDTO> JPQLPaging(
+            @PageableDefault(
+                    page = 0,
+                    size = 5,
+                    sort = "id",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+        Page<User> users = userService.getAllUsersJPQLPageable(pageable);
         return users.map(userMapper::userToUserResponse);
 
     }
+
     @PostMapping("/pagination/criteria")
-    public Page<UserResponse> criteriaPagination(
+    public Page<UserDTO> criteriaPagination(
             @RequestBody UserFilterRequest filters,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
-    ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by("id").ascending()
-        );
+            @PageableDefault(
+                    page = 0,
+                    size = 5,
+                    sort = "id",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
 
         Page<User> users = userService.criteriaPagination(
                 filters,
@@ -158,15 +170,17 @@ public class UserController {
 
         return users.map(userMapper::userToUserResponse);
     }
-    @GetMapping("/pagination/join-fetch")
-    public Page<UserResponse> joinFetchPagination(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
 
-        Page<User> users =
-                userService.getUsersWithAddresses(pageable);
+    @GetMapping("/pagination/join-fetch")
+    public Page<UserDTO> joinFetchPagination(
+            @PageableDefault(
+                    page = 0,
+                    size = 5,
+                    sort = "id",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+
+        Page<User> users = userService.getUsersWithAddresses(pageable);
 
         return users.map(userMapper::userToUserResponse);
     }

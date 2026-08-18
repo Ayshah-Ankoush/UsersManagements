@@ -2,9 +2,8 @@ package com.codeWithAyshah.usersmanagment.service;
 
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.UserFilterRequest;
 import com.codeWithAyshah.usersmanagment.exception.ResourceNotFoundException;
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.CreatUserRequest;
-import com.codeWithAyshah.usersmanagment.models.User;
-import com.codeWithAyshah.usersmanagment.models.UserAddresses;
+import com.codeWithAyshah.usersmanagment.model.User;
+import com.codeWithAyshah.usersmanagment.model.UserAddress;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
 import com.codeWithAyshah.usersmanagment.repository.UserSearchRepository;
 import org.springframework.data.domain.Page;
@@ -44,24 +43,53 @@ public class UserService {
         return userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
     }
 
-    public void updateUser(Integer id ,User  newuser) {
-        User existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
-        existingUser.setFullName(newuser.getFullName());
-        //user.setPhoneNumber(user.getPhoneNumber());
-        userRepository.save(existingUser);
-    }
+    @Transactional
+    public User updateUser(Integer id, User newUser) {
+        User existingUser = userRepository
+                .findByIdAndDeletedFalse(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User", id)
+                );
 
-    public User updateUserPartially(Integer id, User newuser) {
-       User  existingUser = userRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("User",id));
+        existingUser.setFullName(newUser.getFullName());
+        existingUser.setPhoneNumber(newUser.getPhoneNumber());
 
-        if (newuser.getFullName()!= null) {
-            existingUser.setFullName(newuser.getFullName());
+        existingUser.getAddresses().clear();
+
+        for (UserAddress address : newUser.getAddresses()) {
+            address.setId(null);
+            existingUser.addAddress(address);
         }
 
+        return userRepository.save(existingUser);
+    }
 
-        User updated = userRepository.save(existingUser);
-        return updated;
+    @Transactional
+    public User updateUserPartially(Integer id, User newUser) {
+        User existingUser = userRepository
+                .findByIdAndDeletedFalse(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User", id)
+                );
 
+        if (newUser.getFullName() != null) {
+            existingUser.setFullName(newUser.getFullName());
+        }
+
+        if (newUser.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(newUser.getPhoneNumber());
+        }
+
+        if (newUser.getAddresses() != null) {
+            existingUser.getAddresses().clear();
+
+            for (UserAddress address : newUser.getAddresses()) {
+                address.setId(null);
+                existingUser.addAddress(address);
+            }
+        }
+
+        return userRepository.save(existingUser);
     }
 
     public void deleteUser(Integer id) {
@@ -88,7 +116,7 @@ public class UserService {
             );
         }
     }
-    public void addAddress(Integer userId, UserAddresses address) {
+    public void addAddress(Integer userId, UserAddress address) {
 
         User existingUser = userRepository
                 .findByIdAndDeletedFalse(userId)

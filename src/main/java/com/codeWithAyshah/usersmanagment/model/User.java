@@ -1,5 +1,6 @@
-package com.codeWithAyshah.usersmanagment.models;
+package com.codeWithAyshah.usersmanagment.model;
 
+import com.codeWithAyshah.usersmanagment.controller.addressDTO.CreateUserAddressRequest;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,23 +19,23 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "fullname")
+    @Column(name = "full_name")
     private String fullName;
-    @Column(name = "phonenumber")
+    @Column(name = "phone_number")
     private String phoneNumber;
     @Column(name = "deleted")
     private boolean deleted;
 
 
     @OneToMany(mappedBy = "user" ,cascade =CascadeType.ALL,orphanRemoval = true,fetch = FetchType.LAZY)
-    private List<UserAddresses> addresses=new ArrayList<>();
+    private List<UserAddress> addresses=new ArrayList<>();
 
-    public void addAddress(UserAddresses address) {
+    public void addAddress(UserAddress address) {
         addresses.add(address);
         address.setUser(this);
     }
 
-    public void removeAddress(UserAddresses address) {
+    public void removeAddress(UserAddress address) {
         addresses.remove(address);
         address.setUser(null);
     }

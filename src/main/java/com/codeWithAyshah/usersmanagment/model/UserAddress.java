@@ -1,12 +1,15 @@
-package com.codeWithAyshah.usersmanagment.models;
+package com.codeWithAyshah.usersmanagment.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
 @Data
+@RequiredArgsConstructor
 @Entity
-@Table(name = "useraddresses")
-public class UserAddresses {
+@Table(name = "user_address")
+public class UserAddress {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,19 +28,7 @@ public class UserAddresses {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public UserAddresses() {
-    }
 
-    public UserAddresses(
-            String city,
-            String street,
-            String buildingNumber
-    ) {
-        this.city = city;
-        this.street = street;
-        this.buildingNumber = buildingNumber;
-
-    }
 
 
 }

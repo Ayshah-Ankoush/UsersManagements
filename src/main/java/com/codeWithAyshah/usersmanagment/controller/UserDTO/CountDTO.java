@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class CountDTO {
-    private long count;
+    private Long count;
 
 }

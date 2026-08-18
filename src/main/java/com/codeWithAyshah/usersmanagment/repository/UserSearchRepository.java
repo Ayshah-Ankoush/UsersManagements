@@ -1,8 +1,7 @@
 package com.codeWithAyshah.usersmanagment.repository;
 
-import com.codeWithAyshah.usersmanagment.controller.UserDTO.CreatUserRequest;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.UserFilterRequest;
-import com.codeWithAyshah.usersmanagment.models.User;
+import com.codeWithAyshah.usersmanagment.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -53,12 +52,12 @@ public class UserSearchRepository {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        if (userFilterRequest.getFullName() !=null){
-            Predicate namePredicate = criteriaBuilder.like(root.get("fullName"), "%" + userFilterRequest.getFullName() + "%");
+        if (userFilterRequest.getFull_Name() !=null){
+            Predicate namePredicate = criteriaBuilder.like(root.get("fullName"), "%" + userFilterRequest.getFull_Name() + "%");
             predicates.add(namePredicate);
         }
-        if (userFilterRequest.getPhoneNumber() !=null){
-            Predicate phonePredicate = criteriaBuilder.like(root.get("phoneNumber"), "%" + userFilterRequest.getPhoneNumber() + "%");
+        if (userFilterRequest.getPhone_Number() !=null){
+            Predicate phonePredicate = criteriaBuilder.like(root.get("phoneNumber"), "%" + userFilterRequest.getPhone_Number() + "%");
             predicates.add(phonePredicate);
         }
         if (userFilterRequest.getCity() !=null){

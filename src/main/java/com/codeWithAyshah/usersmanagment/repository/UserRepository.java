@@ -1,6 +1,6 @@
 package com.codeWithAyshah.usersmanagment.repository;
 
-import com.codeWithAyshah.usersmanagment.models.User;
+import com.codeWithAyshah.usersmanagment.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> ,UserCriteriaRepository{
+public interface UserRepository extends JpaRepository<User, Integer> , UserCustomRepository {
 
     @Override
     @EntityGraph(attributePaths = "addresses")

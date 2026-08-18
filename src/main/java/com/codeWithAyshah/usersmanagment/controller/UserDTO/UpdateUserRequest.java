@@ -1,6 +1,9 @@
 package com.codeWithAyshah.usersmanagment.controller.UserDTO;
 
-import com.codeWithAyshah.usersmanagment.models.UserAddresses;
+import com.codeWithAyshah.usersmanagment.controller.addressDTO.UpdateUserAddressRequest;
+import com.codeWithAyshah.usersmanagment.model.UserAddress;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
@@ -8,6 +11,9 @@ import java.util.List;
 @Data
 public class UpdateUserRequest {
 
-    private String fullName;
-    private List<UserAddresses> addresses;
+
+    @NotBlank(message = "Full name is required")
+    private String full_Name;
+    @NotNull(message = "Addresses are required")
+    private List<UpdateUserAddressRequest> addresses;
 }

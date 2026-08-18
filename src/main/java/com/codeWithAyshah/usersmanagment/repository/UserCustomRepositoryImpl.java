@@ -1,7 +1,7 @@
 package com.codeWithAyshah.usersmanagment.repository;
 
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.UserFilterRequest;
-import com.codeWithAyshah.usersmanagment.models.User;
+import com.codeWithAyshah.usersmanagment.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class UserCriteriaRepositoryImpl implements UserCriteriaRepository{
+public class UserCustomRepositoryImpl implements UserCustomRepository {
 
     private final EntityManager entityManager ;
 
-    UserCriteriaRepositoryImpl(EntityManager entityManager) {
+    UserCustomRepositoryImpl(EntityManager entityManager) {
         this.entityManager = entityManager ;
     }
     @Override
@@ -71,11 +71,11 @@ public class UserCriteriaRepositoryImpl implements UserCriteriaRepository{
             return predicates.toArray(new Predicate[0]);
 
         }
-        if (filter.getFullName()!=null && !filter.getFullName().isBlank()){
-            predicates.add(criteriaBuilder.like(user.get("fullName"), "%"+filter.getFullName()+"%"));
+        if (filter.getFull_Name()!=null && !filter.getFull_Name().isBlank()){
+            predicates.add(criteriaBuilder.like(user.get("fullName"), "%"+filter.getFull_Name()+"%"));
         }
-        if (filter.getPhoneNumber()!=null && !filter.getPhoneNumber().isBlank()){
-            predicates.add(criteriaBuilder.equal(user.get("phoneNumber"), filter.getPhoneNumber()));
+        if (filter.getPhone_Number()!=null && !filter.getPhone_Number().isBlank()){
+            predicates.add(criteriaBuilder.equal(user.get("phoneNumber"), filter.getPhone_Number()));
         }
 
         return predicates.toArray(new Predicate[0]);
