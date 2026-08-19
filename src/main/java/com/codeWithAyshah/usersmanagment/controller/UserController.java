@@ -59,9 +59,10 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public void update(@Valid @RequestBody UpdateUserRequest updateUserRequest, @PathVariable Integer id) {//updateUserReq
+    public void update( @RequestBody  UpdateUserRequest updateUserRequest, @PathVariable Integer id) {//updateUserReq
         User user = userMapper.updateUserRequestToUser(updateUserRequest);
-        userService.updateUser(id, user);
+
+        userService.updateUser(id, user,updateUserRequest);
     }
 
     @PatchMapping("/{id}")
