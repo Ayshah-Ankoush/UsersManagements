@@ -1,17 +1,20 @@
 package com.codeWithAyshah.usersmanagment.service;
 
+import com.codeWithAyshah.usersmanagment.controller.UserDTO.UpdateUserRequest;
 import com.codeWithAyshah.usersmanagment.controller.UserDTO.UserFilterRequest;
 import com.codeWithAyshah.usersmanagment.exception.ResourceNotFoundException;
 import com.codeWithAyshah.usersmanagment.model.User;
 import com.codeWithAyshah.usersmanagment.model.UserAddress;
 import com.codeWithAyshah.usersmanagment.repository.UserRepository;
 import com.codeWithAyshah.usersmanagment.repository.UserSearchRepository;
+import jakarta.validation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -20,10 +23,12 @@ public class UserService {
 
     private UserRepository userRepository;
     private UserSearchRepository userSearchRepository;
+    private Validator validator;
 
     public UserService(UserRepository userRepository,  UserSearchRepository userSearchRepository) {
         this.userRepository = userRepository;
         this.userSearchRepository = userSearchRepository;
+        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
     public long countUsers() {
@@ -44,7 +49,7 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUser(Integer id, User newUser) {
+    public void updateUser(Integer id, User newUser, UpdateUserRequest request) {
         User existingUser = userRepository
                 .findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
@@ -52,16 +57,27 @@ public class UserService {
                 );
 
         existingUser.setFullName(newUser.getFullName());
-        existingUser.setPhoneNumber(newUser.getPhoneNumber());
+        userRepository.saveAndFlush(existingUser);
+
+        Set<ConstraintViolation<UpdateUserRequest>> violations = validator.validate(request);
+        violations.forEach(violation ->
+                System.out.println(
+                        violation.getPropertyPath()
+                                + ": "
+                                + violation.getMessage()
+                )
+        );
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations); // failure happens after the write
+        }
 
         existingUser.getAddresses().clear();
-
         for (UserAddress address : newUser.getAddresses()) {
             address.setId(null);
             existingUser.addAddress(address);
         }
 
-        return userRepository.save(existingUser);
+
     }
 
     @Transactional
